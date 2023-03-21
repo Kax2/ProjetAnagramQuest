@@ -94,13 +94,39 @@ public class Serveur_UDP {
             /* Converting the data in the received packet to a List of commands */
             ArrayList<ArrayList<String>> commandList = datagramToCommandList(receivedPacket);
 
-            /* create new game instance if start command is received */
+            /* Checking if user sent start command */
             for(ArrayList<String> command : commandList){
                 if(command.get(0)=="start"){
-                    gameInstances.add(new Game(getNewIdForGameInstance(),receivedPacket.getAddress(), receivedPacket.getPort()));
+
+                    /* Checking if user did not send a value of a max length for the anagram */
+                    if((command.size()==1)){
+                        System.err.println("Received start command by : "+receivedPacket.getAddress() + "/" +
+                                receivedPacket.getPort() + " with no max size of anagram, canceling game instantiation");
+                        continue;
+                    }
+
+                    /* Checking if more than one value has been sent */
+                    if(command.size()>2){
+                        System.out.println("Several values were given, using only the first value");
+                    }
+
+                    /* initializing final length of a anagram */
+                    int finalLength;
+
+                    /* Checking if the value sent is a number */
+                    try{
+                        finalLength = Integer.parseInt(command.get(1));
+                    }catch (NumberFormatException e){
+                        System.err.println("Value parsed is not a Number, canceling game instantiation");
+                        continue;
+                    }
+
+                    /* All other checks are complete, we instantiate a game instance for the player */
+                    gameInstances.add(new Game(getNewIdForGameInstance(),receivedPacket.getAddress(), receivedPacket.getPort(), finalLength));
                 }
             }
 
+            
 
             //System.out.println(receivedPacket.getAddress() + "/" + receivedPacket.getPort() + ": " + receivedPacketString);
 
