@@ -11,7 +11,7 @@ public class Serveur_UDP {
 
     public static final int PORT = 20000;
     public static final String INTERFACE = "localhost";
-    private static LinkedList<Game> gameInstances;
+    private static ArrayList<Game> gameInstances = new ArrayList<>();
     private static ArrayList<ArrayList<String>> datagramToCommandList(DatagramPacket packet){
 
         /* Converting data to String */
@@ -43,23 +43,64 @@ public class Serveur_UDP {
     }
     private static int getNewIdForGameInstance(){
 
-        /* Get the ID of the last Game Instance */
-        int id = gameInstances.get(gameInstances.size()-1).getId();
+        int id=0;
 
+        /* If there are already Instances of a game */
+        if(gameInstances.size()>=1){
+            /* Get the ID of the last Game Instance */
+            id = gameInstances.get(gameInstances.size()-1).getId();
 
-        /* Get the ids of all game instances */
-        ArrayList<Integer> ids = new ArrayList<>();
-        for(Game game : gameInstances){
-            ids.add(game.getId());
-        }
+            /* Get the ids of all game instances */
+            ArrayList<Integer> ids = new ArrayList<>();
+            for(Game game : gameInstances){
+                ids.add(game.getId());
+            }
 
-        /* Check if ID is already in the list of IDs, increase ID by one if it is already in the list of IDs*/
-        while(ids.contains(id)){
-            id++;
+            /* Check if ID is already in the list of IDs, increase ID by one if it is already in the list of IDs*/
+            while(ids.contains(id)){
+                id++;
+            }
         }
 
         return id;
 
+    }
+
+    private static void parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket){
+
+
+        for(ArrayList<String> command : commandList){
+
+            if(command.get(0).equals("start")){
+
+                /* Checking if user did not send a value of a max length for the anagram */
+                if((command.size()==1)){
+                    System.err.println("Received start command by : "+receivedPacket.getAddress() + "/" +
+                            receivedPacket.getPort() + " with no max size of anagram, canceling game instantiation");
+                    continue;
+                }
+
+                /* Checking if more than one value has been sent */
+                if(command.size()>2){
+                    System.out.println("Several values were given, using only the first value");
+                }
+
+                /* initializing final length of a anagram */
+                int finalLength;
+
+                /* Checking if the value sent is a number */
+                try{
+                    finalLength = Integer.parseInt(command.get(1));
+                }catch (NumberFormatException e){
+                    System.err.println("Value parsed is not a Number, canceling game instantiation");
+                    continue;
+                }
+
+                /* All other checks are valid, we instantiate a game instance for the player */
+                Game game = new Game(getNewIdForGameInstance(),receivedPacket.getAddress(), receivedPacket.getPort(), finalLength);
+                gameInstances.add(game);
+            }
+        }
     }
     public static void main(String[] args) throws UnknownHostException, SocketException {
 
@@ -91,57 +132,31 @@ public class Serveur_UDP {
                 continue;
             }
 
+            String dataString = new String(receivedPacket.getData(), 0, receivedPacket.getLength(), StandardCharsets.UTF_8);
+            System.out.println(receivedPacket.getAddress() + "/" + receivedPacket.getPort() + ": " + dataString);
+
             /* Converting the data in the received packet to a List of commands */
             ArrayList<ArrayList<String>> commandList = datagramToCommandList(receivedPacket);
 
-            /* Checking if user sent start command */
-            for(ArrayList<String> command : commandList){
-                if(command.get(0)=="start"){
-
-                    /* Checking if user did not send a value of a max length for the anagram */
-                    if((command.size()==1)){
-                        System.err.println("Received start command by : "+receivedPacket.getAddress() + "/" +
-                                receivedPacket.getPort() + " with no max size of anagram, canceling game instantiation");
-                        continue;
-                    }
-
-                    /* Checking if more than one value has been sent */
-                    if(command.size()>2){
-                        System.out.println("Several values were given, using only the first value");
-                    }
-
-                    /* initializing final length of a anagram */
-                    int finalLength;
-
-                    /* Checking if the value sent is a number */
-                    try{
-                        finalLength = Integer.parseInt(command.get(1));
-                    }catch (NumberFormatException e){
-                        System.err.println("Value parsed is not a Number, canceling game instantiation");
-                        continue;
-                    }
-
-                    /* All other checks are complete, we instantiate a game instance for the player */
-                    gameInstances.add(new Game(getNewIdForGameInstance(),receivedPacket.getAddress(), receivedPacket.getPort(), finalLength));
-                }
-            }
-
-            
-
-            //System.out.println(receivedPacket.getAddress() + "/" + receivedPacket.getPort() + ": " + receivedPacketString);
-
-
-            /*  Affichage pour voir si ça marche, ne pas prendre en compte
-            for(int i=0; i<receivedPacketCommands.length; i++) {
-                if(commandList.get(i).size()==1){
-                    System.out.println("Elem " + i + " : " + commandList.get(i).get(0));
-                } else if (commandList.get(i).size()==2) {
-                    System.out.println("Elem " + i + " : " + commandList.get(i).get(0) + " -> "+commandList.get(i).get(1));
+            /*
+            for(ArrayList<String> command : commandList) {
+                if(command.size()==1){
+                    System.out.println("Command : " + command.get(0));
+                } else if (commandList.size()==2) {
+                    System.out.println("Command : " + command.get(0) + " -> "+command.get(1));
                 }
             }
             */
 
+            /* Checking if user sent start command */
+            parseStart(commandList, receivedPacket);
 
+            
+            if(gameInstances.size()!=0){
+                for(Game game : gameInstances){
+                    System.out.println("ID : " + game.getId());
+                }
+            }
         }
     }
 }
