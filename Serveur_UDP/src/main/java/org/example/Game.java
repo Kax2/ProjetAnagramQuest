@@ -1,15 +1,22 @@
 package org.example;
 
 import java.net.Inet4Address;
+import java.net.InetAddress;
 
 public class Game {
 
     private final int id;
-    private final Inet4Address user_addr;
+    private final InetAddress userAddr;
+    private final int userPort;
 
-    public Game(int id, Inet4Address user_addr){
+    public Game(int id, InetAddress userAddr, int userPort){
         this.id = id;
-        this.user_addr = user_addr;
+        this.userAddr = userAddr;
+        this.userPort = userPort;
+    }
+
+    public int getId(){
+        return id;
     }
 
 }

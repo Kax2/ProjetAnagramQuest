@@ -41,6 +41,26 @@ public class Serveur_UDP {
 
         return commandList;
     }
+    private static int getNewIdForGameInstance(){
+
+        /* Get the ID of the last Game Instance */
+        int id = gameInstances.get(gameInstances.size()-1).getId();
+
+
+        /* Get the ids of all game instances */
+        ArrayList<Integer> ids = new ArrayList<>();
+        for(Game game : gameInstances){
+            ids.add(game.getId());
+        }
+
+        /* Check if ID is already in the list of IDs, increase ID by one if it is already in the list of IDs*/
+        while(ids.contains(id)){
+            id++;
+        }
+
+        return id;
+
+    }
     public static void main(String[] args) throws UnknownHostException, SocketException {
 
         ///, InetAddress.getByName(INTERFACE)
@@ -71,7 +91,16 @@ public class Serveur_UDP {
                 continue;
             }
 
+            /* Converting the data in the received packet to a List of commands */
             ArrayList<ArrayList<String>> commandList = datagramToCommandList(receivedPacket);
+
+            /* create new game instance if start command is received */
+            for(ArrayList<String> command : commandList){
+                if(command.get(0)=="start"){
+                    gameInstances.add(new Game(getNewIdForGameInstance(),receivedPacket.getAddress(), receivedPacket.getPort()));
+                }
+            }
+
 
             //System.out.println(receivedPacket.getAddress() + "/" + receivedPacket.getPort() + ": " + receivedPacketString);
 
