@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.*;
 
 public class Serveur_UDP {
 
@@ -196,6 +194,15 @@ public class Serveur_UDP {
             if(gameInstances.size()!=0){
                 for(Game game : gameInstances){
                     System.out.println("ID : " + game.getUserAddr() + "/" + game.getUserPort());
+
+                    Map<String, Set<String>> anagramicClasses = game.getAnagramicClasses();
+                    for(var anagramicClasse :  anagramicClasses.entrySet()){
+                        System.out.print(anagramicClasse.getKey() + " -> ");
+                        for(var value : anagramicClasse.getValue()){
+                            System.out.print(value + " ");
+                            System.out.println();
+                        }
+                    }
                 }
             }
         }

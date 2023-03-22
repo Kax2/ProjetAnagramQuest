@@ -53,7 +53,9 @@ public class Game {
         return anagramicClasses;
     }
 
-
+    public Map<String, Set<String>> getAnagramicClasses(){
+        return this.anagramicClasses;
+    }
     public int getUserPort(){
         return this.userPort;
     }
@@ -118,14 +120,39 @@ public class Game {
 
         int length = 1;
 
-
+        anagramSequence.add(lastWord);
         return anagramSequence;
     }
 
-    private void findAnagrams(String initialWord, ArrayList<String> sequence){
+    private void findAnagrams(String initialWord){
 
-        ArrayList<String> anagrams = new ArrayList<>();
+        /* Finding all anagram with 1 less letter */
+        ArrayList<String> anagramsWith1LessLetter = new ArrayList<>();
 
+        for(var entry : anagramicClasses.entrySet()){
+
+            /* Getting all characters into a list */
+            char keyAsArray[] = entry.getKey().toCharArray();
+            List<Character> keyAsList = new ArrayList<>();
+            for(char c : keyAsArray){
+                keyAsList.add(c);
+            }
+
+            List<Character> keyAsListCopy = keyAsList;
+
+            /* Deleting every letter in initial word from the key's letter */
+            for(int i=0; i<initialWord.length(); i++){
+                if(keyAsListCopy.contains(initialWord.charAt(i))){
+                    keyAsListCopy.remove(initialWord.charAt(i));
+                }
+            }
+
+            /* If only one letter is remaining we can use for the sequence */
+            if(keyAsListCopy.size()==1){
+                findAnagrams(entry.getKey());
+            }
+
+        }
         
 
     }
