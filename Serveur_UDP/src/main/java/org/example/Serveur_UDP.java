@@ -53,8 +53,27 @@ public class Serveur_UDP {
         return false;
     }
 
-    private static boolean parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket){
+    private static void sendErrorPacket(DatagramSocket socket, InetAddress destAddr, int destPort, String errorMsg){
 
+        byte[] errorMsgBytes = ("error:" + errorMsg).getBytes(StandardCharsets.UTF_8);
+
+        var errorMsgPacket = new DatagramPacket(errorMsgBytes, 0, errorMsgBytes.length);
+
+        errorMsgPacket.setAddress(destAddr);
+        errorMsgPacket.setPort(destPort);
+
+        try {
+            socket.send(errorMsgPacket);
+        } catch (IOException e) {
+            System.err.println("Could not send packet");
+        }
+    }
+
+    private static boolean parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket, DatagramSocket socket){
+
+
+
+        String errorMsg;
 
         for(ArrayList<String> command : commandList){
 
@@ -62,8 +81,14 @@ public class Serveur_UDP {
 
                 /* Checking if user did not send a value of a max length for the anagram */
                 if((command.size()==1)){
-                    System.err.println("Received start command by : "+receivedPacket.getAddress() + "/" +
-                            receivedPacket.getPort() + " with no max size of anagram, canceling game instantiation");
+
+                    errorMsg = "No max size of anagram specified -> canceling game instantiation";
+
+                    /* printing error in console and sending error message to user's client */
+                    System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
+
+                    sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
+
                     return false;
                 }
 
@@ -72,14 +97,21 @@ public class Serveur_UDP {
                     System.out.println("Several values were given, using only the first value");
                 }
 
-                /* initializing final length of a anagram */
+                /* initializing final length of an anagram */
                 int finalLength;
 
                 /* Checking if the value sent is a number */
                 try{
                     finalLength = Integer.parseInt(command.get(1));
                 }catch (NumberFormatException e){
-                    System.err.println("Value parsed is not a Number, canceling game instantiation");
+
+                    errorMsg = "Value parsed is not a Number -> canceling game instantiation";
+
+                    /* printing error in console and sending error message to user's client */
+                    System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
+
+                    sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
+
                     return false;
                 }
 
@@ -88,13 +120,27 @@ public class Serveur_UDP {
                     return false;
                 }
 
-                /* All other checks are valid, we instantiate a game instance for the player */
                 Game game = new Game(receivedPacket.getAddress(), receivedPacket.getPort(), finalLength);
+
+                /* Checking if we could generate a anagram sequence for the specified max length of a word */
+                if(game.getAnagramSequence()==null){
+
+                    errorMsg = "Could not find a anagram sequence, canceling game instantiation";
+
+                    /* printing error in console and sending error message to user's client */
+                    System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
+
+                    sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
+
+                    return false;
+                }
+
+                /* All other checks are valid, we add the game to instances for the player and do not check other commands */
                 gameInstances.add(game);
                 return true;
             }
         }
-        /* No start command in command list, we do nothing */
+        /* No start command in command list, we do nothing, and check for other commands*/
         return false;
     }
     public static void main(String[] args) throws UnknownHostException, SocketException {
@@ -133,22 +179,11 @@ public class Serveur_UDP {
             /* Converting the data in the received packet to a List of commands */
             ArrayList<ArrayList<String>> commandList = datagramToCommandList(receivedPacket);
 
-            /*
-            for(ArrayList<String> command : commandList) {
-                if(command.size()==1){
-                    System.out.println("Command : " + command.get(0));
-                } else if (commandList.size()==2) {
-                    System.out.println("Command : " + command.get(0) + " -> "+command.get(1));
-                }
-            }
-            */
-
             /* Checking if user sent start command */
-            if(parseStart(commandList, receivedPacket)){
+            if(parseStart(commandList, receivedPacket, socket)){
                 continue;
             }
 
-            //System.out.println(Paths.get(getA));
             if(gameInstances.size()!=0){
                 for(Game game : gameInstances){
                     System.out.println("ID : " + game.getUserAddr() + "/" + game.getUserPort());

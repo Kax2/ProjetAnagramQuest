@@ -12,7 +12,7 @@ public class Game {
     private final InetAddress userAddr;
     private final int userPort;
     private final int finalLength;
-    //public final ArrayList<String> anagramSequence;
+    private final ArrayList<String> anagramSequence;
     private ArrayList<String> dictionary;
     public Game(InetAddress userAddr, int userPort, int finalLength){
         this.userAddr = userAddr;
@@ -20,6 +20,8 @@ public class Game {
         this.finalLength = finalLength;
 
         dictionary = loadDictionary("../french-debian.txt");
+
+        this.anagramSequence = findAnagramSequence(finalLength);
 
     }
 
@@ -29,6 +31,10 @@ public class Game {
 
     public InetAddress getUserAddr(){
         return this.userAddr;
+    }
+
+    public ArrayList<String> getAnagramSequence(){
+        return this.anagramSequence;
     }
 
     private ArrayList<String> loadDictionary(String path){
@@ -48,6 +54,27 @@ public class Game {
         for(String word : dictionary){
             System.out.println(word);
         }
+    }
+
+    private ArrayList<String> findAnagramSequence(int maxLength){
+        ArrayList<String> anagramSequence = new ArrayList<>();
+
+        boolean lengthIsOk = false;
+
+        /* Checking if there is a word of specified max length */
+        for(String word : dictionary){
+            if(word.length() == maxLength){
+                lengthIsOk = true;
+            }
+        }
+
+        if(!lengthIsOk){
+            System.err.println("Could not find a word with a max length of " + maxLength + " | Returning empty anagram sequence");
+            return anagramSequence;
+        }
+
+
+        return anagramSequence;
     }
 
 }
