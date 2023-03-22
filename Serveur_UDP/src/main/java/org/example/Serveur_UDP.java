@@ -94,7 +94,7 @@ public class Serveur_UDP {
 
                 /* Checking if more than one value has been sent */
                 if(command.size()>2){
-                    System.out.println("Several values were given, using only the first value");
+                    System.out.println("Several values were given -> using only the first value");
                 }
 
                 /* initializing final length of an anagram */
@@ -117,15 +117,23 @@ public class Serveur_UDP {
 
                 /* Check if game is already started for the user*/
                 if(isGameAlreadyStarted(receivedPacket.getAddress(),receivedPacket.getPort())){
+
+                    errorMsg = "A game has already been started for this client -> canceling game instantiation";
+
+                    /* printing error in console and sending error message to user's client */
+                    System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
+
+                    sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
+
                     return false;
                 }
 
                 Game game = new Game(receivedPacket.getAddress(), receivedPacket.getPort(), finalLength);
 
                 /* Checking if we could generate a anagram sequence for the specified max length of a word */
-                if(game.getAnagramSequence()==null){
+                if(game.getAnagramSequence().isEmpty()){
 
-                    errorMsg = "Could not find a anagram sequence, canceling game instantiation";
+                    errorMsg = "Could not find a anagram sequence -> canceling game instantiation";
 
                     /* printing error in console and sending error message to user's client */
                     System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
@@ -174,7 +182,7 @@ public class Serveur_UDP {
             }
 
             String dataString = new String(receivedPacket.getData(), 0, receivedPacket.getLength(), StandardCharsets.UTF_8);
-            System.out.println(receivedPacket.getAddress() + "/" + receivedPacket.getPort() + ": " + dataString);
+            System.out.println("Received Message from : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + ": " + dataString);
 
             /* Converting the data in the received packet to a List of commands */
             ArrayList<ArrayList<String>> commandList = datagramToCommandList(receivedPacket);
@@ -184,6 +192,7 @@ public class Serveur_UDP {
                 continue;
             }
 
+            System.out.println("Game Instances :");
             if(gameInstances.size()!=0){
                 for(Game game : gameInstances){
                     System.out.println("ID : " + game.getUserAddr() + "/" + game.getUserPort());

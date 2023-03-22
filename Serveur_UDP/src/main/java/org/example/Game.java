@@ -61,18 +61,28 @@ public class Game {
 
         boolean lengthIsOk = false;
 
+        if(dictionary.size()==0){
+
+            System.err.println("Dictionary is empty -> cannot create anagram sequence");
+            return anagramSequence;
+        }
+
+        String lastWord = "";
+
         /* Checking if there is a word of specified max length */
         for(String word : dictionary){
             if(word.length() == maxLength){
+                lastWord = word;
                 lengthIsOk = true;
             }
         }
 
         if(!lengthIsOk){
-            System.err.println("Could not find a word with a max length of " + maxLength + " | Returning empty anagram sequence");
+            System.err.println("Could not find a word with a max length of " + maxLength + " -> cannot create anagram sequence");
             return anagramSequence;
         }
 
+        anagramSequence.add(lastWord);
 
         return anagramSequence;
     }
