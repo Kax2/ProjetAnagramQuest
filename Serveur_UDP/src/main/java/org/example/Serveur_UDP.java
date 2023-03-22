@@ -66,7 +66,7 @@ public class Serveur_UDP {
 
     }
 
-    private static void parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket){
+    private static boolean parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket){
 
 
         for(ArrayList<String> command : commandList){
@@ -77,7 +77,7 @@ public class Serveur_UDP {
                 if((command.size()==1)){
                     System.err.println("Received start command by : "+receivedPacket.getAddress() + "/" +
                             receivedPacket.getPort() + " with no max size of anagram, canceling game instantiation");
-                    continue;
+                    return false;
                 }
 
                 /* Checking if more than one value has been sent */
@@ -93,14 +93,16 @@ public class Serveur_UDP {
                     finalLength = Integer.parseInt(command.get(1));
                 }catch (NumberFormatException e){
                     System.err.println("Value parsed is not a Number, canceling game instantiation");
-                    continue;
+                    return false;
                 }
 
                 /* All other checks are valid, we instantiate a game instance for the player */
                 Game game = new Game(getNewIdForGameInstance(),receivedPacket.getAddress(), receivedPacket.getPort(), finalLength);
                 gameInstances.add(game);
+                return true;
             }
         }
+        return false;
     }
     public static void main(String[] args) throws UnknownHostException, SocketException {
 
@@ -149,9 +151,12 @@ public class Serveur_UDP {
             */
 
             /* Checking if user sent start command */
-            parseStart(commandList, receivedPacket);
+            if(parseStart(commandList, receivedPacket)){
+                continue;
+            }
 
-            
+
+
             if(gameInstances.size()!=0){
                 for(Game game : gameInstances){
                     System.out.println("ID : " + game.getId());
