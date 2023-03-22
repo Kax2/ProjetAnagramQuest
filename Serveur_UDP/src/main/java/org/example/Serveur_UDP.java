@@ -1,8 +1,10 @@
 package org.example;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -146,8 +148,7 @@ public class Serveur_UDP {
                 continue;
             }
 
-
-
+            //System.out.println(Paths.get(getA));
             if(gameInstances.size()!=0){
                 for(Game game : gameInstances){
                     System.out.println("ID : " + game.getUserAddr() + "/" + game.getUserPort());
