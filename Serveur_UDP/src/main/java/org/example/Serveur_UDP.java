@@ -41,29 +41,14 @@ public class Serveur_UDP {
 
         return commandList;
     }
-    private static int getNewIdForGameInstance(){
+    private static boolean isGameAlreadyStarted(InetAddress addr, int port){
 
-        int id=0;
-
-        /* If there are already Instances of a game */
-        if(gameInstances.size()>=1){
-            /* Get the ID of the last Game Instance */
-            id = gameInstances.get(gameInstances.size()-1).getId();
-
-            /* Get the ids of all game instances */
-            ArrayList<Integer> ids = new ArrayList<>();
-            for(Game game : gameInstances){
-                ids.add(game.getId());
-            }
-
-            /* Check if ID is already in the list of IDs, increase ID by one if it is already in the list of IDs*/
-            while(ids.contains(id)){
-                id++;
+        for (Game game : gameInstances){
+            if((game.getUserAddr()==addr) && (game.getUserPort()==port)){
+                return true;
             }
         }
-
-        return id;
-
+        return false;
     }
 
     private static boolean parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket){
@@ -96,12 +81,18 @@ public class Serveur_UDP {
                     return false;
                 }
 
+                /* Check if game is already started for the user*/
+                if(isGameAlreadyStarted(receivedPacket.getAddress(),receivedPacket.getPort())){
+                    return false;
+                }
+
                 /* All other checks are valid, we instantiate a game instance for the player */
-                Game game = new Game(getNewIdForGameInstance(),receivedPacket.getAddress(), receivedPacket.getPort(), finalLength);
+                Game game = new Game(receivedPacket.getAddress(), receivedPacket.getPort(), finalLength);
                 gameInstances.add(game);
                 return true;
             }
         }
+        /* No start command in command list, we do nothing */
         return false;
     }
     public static void main(String[] args) throws UnknownHostException, SocketException {
@@ -159,7 +150,7 @@ public class Serveur_UDP {
 
             if(gameInstances.size()!=0){
                 for(Game game : gameInstances){
-                    System.out.println("ID : " + game.getId());
+                    System.out.println("ID : " + game.getUserAddr() + "/" + game.getUserPort());
                 }
             }
         }

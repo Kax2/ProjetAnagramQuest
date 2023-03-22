@@ -2,22 +2,26 @@ package org.example;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.util.ArrayList;
 
 public class Game {
 
-    private final int id;
     private final InetAddress userAddr;
     private final int userPort;
     private final int finalLength;
-    public Game(int id, InetAddress userAddr, int userPort, int finalLength){
-        this.id = id;
+    //public final ArrayList<String> anagramSequence;
+    public Game(InetAddress userAddr, int userPort, int finalLength){
         this.userAddr = userAddr;
         this.userPort = userPort;
         this.finalLength = finalLength;
     }
 
-    public int getId(){
-        return id;
+    public int getUserPort(){
+        return this.userPort;
+    }
+
+    public InetAddress getUserAddr(){
+        return this.userAddr;
     }
 
 }
