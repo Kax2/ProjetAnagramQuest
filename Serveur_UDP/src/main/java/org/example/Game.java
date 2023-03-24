@@ -17,11 +17,11 @@ public class Game {
     private ArrayList<String> dictionary;
     private Map<String, Set<String>> anagramicClasses;
     private int currentAnagramToGuess;
-    public Game(InetAddress userAddr, int userPort, int finalLength){
+    public Game(InetAddress userAddr, int userPort, int finalLength, String dictPath){
         this.userAddr = userAddr;
         this.userPort = userPort;
 
-        this.dictionary = loadDictionary("../french-debian.txt");
+        this.dictionary = loadDictionary(dictPath);
 
         this.anagramicClasses = createAnagramicClasses(dictionary);
 
@@ -51,12 +51,6 @@ public class Game {
 
     public boolean answerIsCorrect(String answer){
         /* If the sorted answer isn't equal to the anagram to guess, it is automatically not correct */
-
-        /*
-        if(!(sortWord(answer)==anagramSequence.get(currentAnagramToGuess))){
-            return false;
-        }
-         */
 
         Set<String> correctAnswers = anagramicClasses.get(anagramSequence.get(currentAnagramToGuess));
         if(correctAnswers.contains(answer)){
@@ -89,22 +83,15 @@ public class Game {
 
         return anagramicClasses;
     }
-
-    public Map<String, Set<String>> getAnagramicClasses(){
-        return this.anagramicClasses;
-    }
     public int getUserPort(){
         return this.userPort;
     }
-
     public InetAddress getUserAddr(){
         return this.userAddr;
     }
-
     public ArrayList<String> getAnagramSequence(){
         return this.anagramSequence;
     }
-
     private ArrayList<String> loadDictionary(String path){
 
         ArrayList<String> dictionary = new ArrayList<>();
@@ -117,13 +104,6 @@ public class Game {
 
         return dictionary;
     }
-
-    public void printDict(){
-        for(String word : dictionary){
-            System.out.println(word);
-        }
-    }
-
     private ArrayList<String> findAnagramSequence(int maxLength){
 
         if(dictionary.size()==0){
@@ -149,35 +129,6 @@ public class Game {
         /* Choosing one of the last words randomly */
         int randomLastWord = ThreadLocalRandom.current().nextInt(0, potentialLastWords.size());
 
-        /*
-        ArrayList<ArrayList<String>> potentialSequences = new ArrayList<>();
-
-
-        for(String word : potentialLastWords){
-
-            System.out.println("Word : " + word);
-            potentialSequences.add(findAnagrams(word));
-
-        }
-
-
-        int bestSequence = 0;
-        for(int i=1; i<potentialSequences.size(); i++){
-            if(potentialSequences.get(i).size()>potentialSequences.get(bestSequence).size()){
-                bestSequence=i;
-            }
-            if(potentialSequences.get(i).size()==potentialSequences.get(bestSequence).size()){
-                if(ThreadLocalRandom.current().nextInt(0, 2)==1){
-                    bestSequence=i;
-                }
-            }
-        }
-
-
-
-        ArrayList<String> finalAnagramSequence = potentialSequences.get(bestSequence);
-*/
-
         String lastWord = potentialLastWords.get(randomLastWord);
 
         System.out.println("Last word : " + lastWord);
@@ -193,24 +144,11 @@ public class Game {
         String sortLastWord = sortWord(finalAnagramSequence.get(0));
         finalAnagramSequence.set(0,sortLastWord);
 
-        /* Inverse the sequence so that the last element is the largest word */
-
-        /*
-        ArrayList<String> finalAnagramSequenceCopy = (ArrayList<String>) finalAnagramSequence.clone();
-
-        int sizeOfSequence = finalAnagramSequence.size();
-
-        for(int i=0; i<sizeOfSequence; i++){
-            finalAnagramSequence.set(i,finalAnagramSequenceCopy.get(sizeOfSequence-1-i));
-        }
-         */
-
         this.currentAnagramToGuess = finalAnagramSequence.size()-1;
 
         return finalAnagramSequence;
 
     }
-
     private ArrayList<String> findAnagrams(String initialWord){
 
         /* Finding all anagram with 1 less letter */
@@ -248,16 +186,11 @@ public class Game {
 
         }
 
-        //System.out.println("Anagrams with 1 less letter of " + initialWord + " :");
-        //System.out.println(anagramsWith1LessLetter);
-
         /* If no anagrams with one less letters are found, return the initial word */
         if(anagramsWith1LessLetter.isEmpty()){
             ArrayList<String> retWord = new ArrayList<>();
             retWord.add(initialWord);
 
-            //System.out.println("Returned Word : ");
-            //System.out.println(retWord);
             return retWord;
         }
 
@@ -291,10 +224,10 @@ public class Game {
         sequence.add(initialWord);
         sequence.addAll(potentialSequences.get(bestSequence));
 
-        //System.out.println("Returned sequence :");
-        //System.out.println(sequence);
         return sequence;
 
     }
-
+    public String getExampleWord(){
+        return anagramicClasses.get(this.anagramSequence.get(this.currentAnagramToGuess)).iterator().next();
+    }
 }

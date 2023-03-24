@@ -81,6 +81,7 @@ public class Serveur_UDP {
         }
         return gameId;
     }
+
     public static boolean parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket, DatagramSocket socket){
 
         String errorMsg;
@@ -90,9 +91,9 @@ public class Serveur_UDP {
             if(command.get(0).equals("start")){
 
                 /* Checking if user did not send a value of a max length for the anagram */
-                if((command.size()==1)){
+                if(command.size()==1){
 
-                    errorMsg = "No max size of anagram specified -> canceling game instantiation";
+                    errorMsg = "noLengthSpecified";
 
                     /* printing error in console and sending error message to user's client */
 
@@ -104,7 +105,7 @@ public class Serveur_UDP {
 
                 /* Checking if more than one value has been sent */
                 if(command.size()>2){
-                    System.out.println("Several values were given -> using only the first value");
+                    System.out.println("tooManyValuesGiven");
                 }
 
                 /* initializing final length of an anagram */
@@ -115,7 +116,7 @@ public class Serveur_UDP {
                     finalLength = Integer.parseInt(command.get(1));
                 }catch (NumberFormatException e){
 
-                    errorMsg = "Value parsed is not a Number -> canceling game instantiation";
+                    errorMsg = "notANumber";
 
                     /* printing error in console and sending error message to user's client */
                     printErrorMsg(errorMsg, receivedPacket);
@@ -127,7 +128,7 @@ public class Serveur_UDP {
                 /* Check if game is already started for the user*/
                 if(isGameAlreadyStarted(receivedPacket.getAddress(),receivedPacket.getPort())){
 
-                    errorMsg = "A game has already been started for this client -> canceling game instantiation";
+                    errorMsg = "gameAlreadyStarted";
 
                     /* printing error in console and sending error message to user's client */
                     printErrorMsg(errorMsg, receivedPacket);
@@ -135,11 +136,9 @@ public class Serveur_UDP {
 
                     return false;
                 }
-
-                System.out.println("length = "+command.get(1).length());
 
                 if(finalLength==1){
-                    errorMsg = "Given a max length of 1 -> canceling game instantiation";
+                    errorMsg = "lengthOf1";
 
                     /* printing error in console and sending error message to user's client */
                     printErrorMsg(errorMsg, receivedPacket);
@@ -148,12 +147,15 @@ public class Serveur_UDP {
                     return false;
                 }
 
-                Game game = new Game(receivedPacket.getAddress(), receivedPacket.getPort(), finalLength);
+                /* Check if client specified a dictionary */
+
+
+                Game game = new Game(receivedPacket.getAddress(), receivedPacket.getPort(), finalLength, "src/main/resources/dictionaries/english-scowl-80.txt");
 
                 /* Checking if we could generate a anagram sequence for the specified max length of a word */
                 if(game.getAnagramSequence().isEmpty()){
 
-                    errorMsg = "Could not find a anagram sequence -> canceling game instantiation";
+                    errorMsg = "noAnagramSequenceFound";
 
                     /* printing error in console and sending error message to user's client */
                     printErrorMsg(errorMsg, receivedPacket);
@@ -195,7 +197,7 @@ public class Serveur_UDP {
             if(command.get(0).equals("answer")){
                 if((command.size()==1)){
 
-                    errorMsg = "No answer given";
+                    errorMsg = "noAnswerGiven";
 
                     /* printing error in console and sending error message to user's client */
                     printErrorMsg(errorMsg, receivedPacket);
@@ -205,7 +207,7 @@ public class Serveur_UDP {
                 }
 
                 if(command.size()>2){
-                    System.out.println("Several answers were given");
+                    System.out.println("multipleAnswersGiven");
                 }
 
                 /* Searching if a game is started for this client */
@@ -213,7 +215,7 @@ public class Serveur_UDP {
 
                 /* If gameId is still -1, no games were found for this client */
                 if(gameId==-1){
-                    errorMsg = "No games were found for this client";
+                    errorMsg = "noGameFound";
                     printErrorMsg(errorMsg, receivedPacket);
                     sendErrorPacket(socket, receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
                     return true;
@@ -277,14 +279,15 @@ public class Serveur_UDP {
 
                 /* If gameId is still -1, no games were found for this client */
                 if(gameId==-1){
-                    errorMsg = "No games were found for this client";
+                    errorMsg = "noGameFound";
                     printErrorMsg(errorMsg, receivedPacket);
                     sendErrorPacket(socket, receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
                     return true;
                 }
 
+                String msg = "gameCancelled:"+gameInstances.get(gameId).getExampleWord();
                 gameInstances.remove(gameId);
-                String msg = "gameCancelled";
+
                 byte[] msgByte = msg.getBytes(StandardCharsets.UTF_8);
                 DatagramPacket sentPacket = new DatagramPacket(msgByte, msgByte.length);
                 sentPacket.setAddress(receivedPacket.getAddress());
