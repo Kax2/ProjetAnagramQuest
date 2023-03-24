@@ -71,7 +71,16 @@ public class Serveur_UDP {
     private static void printErrorMsg(String errorMsg, DatagramPacket receivedPacket){
         System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
     }
-
+    private static int getGameInstanceOfClient(DatagramPacket receivedPacket){
+        int gameId = -1;
+        for(int i=0; i<gameInstances.size(); i++){
+            if(gameInstances.get(i).getUserAddr()==receivedPacket.getAddress() && gameInstances.get(i).getUserPort()==receivedPacket.getPort()){
+                gameId = i;
+                break;
+            }
+        }
+        return gameId;
+    }
     public static boolean parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket, DatagramSocket socket){
 
         String errorMsg;
@@ -200,14 +209,7 @@ public class Serveur_UDP {
                 }
 
                 /* Searching if a game is started for this client */
-                int gameId = -1;
-
-                for(int i=0; i<gameInstances.size(); i++){
-                    if(receivedPacket.getAddress()==gameInstances.get(i).getUserAddr() && receivedPacket.getPort()==gameInstances.get(i).getUserPort()){
-                        gameId=i;
-                        break;
-                    }
-                }
+                int gameId = getGameInstanceOfClient(receivedPacket);
 
                 /* If gameId is still -1, no games were found for this client */
                 if(gameId==-1){
@@ -265,6 +267,42 @@ public class Serveur_UDP {
         return false;
     }
 
+    public static boolean parseAbandon(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket, DatagramSocket socket){
+        String errorMsg;
+
+        for(ArrayList<String> command : commandList){
+            if(command.get(0).equals("abandon")){
+
+                int gameId = getGameInstanceOfClient(receivedPacket);
+
+                /* If gameId is still -1, no games were found for this client */
+                if(gameId==-1){
+                    errorMsg = "No games were found for this client";
+                    printErrorMsg(errorMsg, receivedPacket);
+                    sendErrorPacket(socket, receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
+                    return true;
+                }
+
+                gameInstances.remove(gameId);
+                String msg = "gameCancelled";
+                byte[] msgByte = msg.getBytes(StandardCharsets.UTF_8);
+                DatagramPacket sentPacket = new DatagramPacket(msgByte, msgByte.length);
+                sentPacket.setAddress(receivedPacket.getAddress());
+                sentPacket.setPort(receivedPacket.getPort());
+
+                try {
+                    socket.send(sentPacket);
+                } catch (IOException e) {
+                    System.err.println("Could not send packet");
+                }
+
+                return true;
+
+            }
+        }
+        return false;
+    }
+
     public static void main(String[] args) throws SocketException {
 
         ///, InetAddress.getByName(INTERFACE)
@@ -307,6 +345,10 @@ public class Serveur_UDP {
             }
 
             if(parseAnswer(commandList, receivedPacket, socket)){
+                continue;
+            }
+
+            if(parseAbandon(commandList, receivedPacket, socket)){
                 continue;
             }
 
