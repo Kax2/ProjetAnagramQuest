@@ -27,7 +27,6 @@ public class Game {
 
         this.anagramSequence = findAnagramSequence(finalLength);
 
-        this.currentAnagramToGuess = 0;
     }
     public String getCurrentAnagramToGuess(){
         return this.anagramSequence.get(this.currentAnagramToGuess);
@@ -38,6 +37,33 @@ public class Game {
         Arrays.sort(wordArray);
         String sortedWord = new String(wordArray);
         return sortedWord;
+
+    }
+    public boolean setNextAnagramToGuess(){
+        this.currentAnagramToGuess--;
+        if(currentAnagramToGuess==-1){
+            /* The client has guessed the last anagram, do not continue the game */
+            return false;
+        }
+        /* The client has not guessed the last anagram, continue the game */
+        return true;
+    }
+
+    public boolean answerIsCorrect(String answer){
+        /* If the sorted answer isn't equal to the anagram to guess, it is automatically not correct */
+
+        /*
+        if(!(sortWord(answer)==anagramSequence.get(currentAnagramToGuess))){
+            return false;
+        }
+         */
+
+        Set<String> correctAnswers = anagramicClasses.get(anagramSequence.get(currentAnagramToGuess));
+        if(correctAnswers.contains(answer)){
+            return true;
+        }else{
+            return false;
+        }
 
     }
     private Map<String, Set<String>> createAnagramicClasses(ArrayList<String> dictionary){
@@ -168,6 +194,8 @@ public class Game {
         finalAnagramSequence.set(0,sortLastWord);
 
         /* Inverse the sequence so that the last element is the largest word */
+
+        /*
         ArrayList<String> finalAnagramSequenceCopy = (ArrayList<String>) finalAnagramSequence.clone();
 
         int sizeOfSequence = finalAnagramSequence.size();
@@ -175,6 +203,9 @@ public class Game {
         for(int i=0; i<sizeOfSequence; i++){
             finalAnagramSequence.set(i,finalAnagramSequenceCopy.get(sizeOfSequence-1-i));
         }
+         */
+
+        this.currentAnagramToGuess = finalAnagramSequence.size()-1;
 
         return finalAnagramSequence;
 

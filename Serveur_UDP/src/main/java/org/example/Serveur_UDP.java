@@ -189,6 +189,7 @@ public class Serveur_UDP {
                     System.out.println("Several answers were given");
                 }
 
+                /* Searching if a game is started for this client */
                 int gameId = -1;
 
                 for(int i=0; i<gameInstances.size(); i++){
@@ -197,7 +198,8 @@ public class Serveur_UDP {
                         break;
                     }
                 }
-                /* If gameId is still -1, no games were found for client */
+
+                /* If gameId is still -1, no games were found for this client */
                 if(gameId==-1){
                     errorMsg = "No games were found for this client";
                     printErrorMsg(errorMsg, receivedPacket);
@@ -206,12 +208,26 @@ public class Serveur_UDP {
                 }
 
 
-                String answer = new String(receivedPacket.getData(), StandardCharsets.UTF_8);
+                String answer = command.get(1);
+                if(gameInstances.get(gameId).answerIsCorrect(answer)){
+                    /* The client has guessed a correct anagram */
+
+                    if(gameInstances.get(gameId).setNextAnagramToGuess()){
+                        
+                    }
+
+                    return true;
+
+                }
+
+
+
 
             }
         }
         return false;
     }
+
     public static void main(String[] args) throws SocketException {
 
         ///, InetAddress.getByName(INTERFACE)
