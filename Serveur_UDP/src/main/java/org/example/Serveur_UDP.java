@@ -110,7 +110,6 @@ public class Serveur_UDP {
 
                     /* printing error in console and sending error message to user's client */
                     printErrorMsg(errorMsg, receivedPacket);
-
                     sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
 
                     return false;
@@ -123,7 +122,18 @@ public class Serveur_UDP {
 
                     /* printing error in console and sending error message to user's client */
                     printErrorMsg(errorMsg, receivedPacket);
+                    sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
 
+                    return false;
+                }
+
+                System.out.println("length = "+command.get(1).length());
+
+                if(finalLength==1){
+                    errorMsg = "Given a max length of 1 -> canceling game instantiation";
+
+                    /* printing error in console and sending error message to user's client */
+                    printErrorMsg(errorMsg, receivedPacket);
                     sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
 
                     return false;
@@ -207,22 +217,49 @@ public class Serveur_UDP {
                     return true;
                 }
 
+                boolean win = false;
 
                 String answer = command.get(1);
+                DatagramPacket sentPacket = new DatagramPacket(new byte[0], 0);
                 if(gameInstances.get(gameId).answerIsCorrect(answer)){
                     /* The client has guessed a correct anagram */
 
-                    if(gameInstances.get(gameId).setNextAnagramToGuess()){
-                        
+                    if(!gameInstances.get(gameId).setNextAnagramToGuess()){
+                        String winMsg = "win";
+                        byte[] winMsgBytes = winMsg.getBytes(StandardCharsets.UTF_8);
+                        sentPacket.setData(winMsgBytes);
+                        win = true;
+
+                    }else{
+
+                        String nextAnagramToGuessMsg = "guess:" + gameInstances.get(gameId).getCurrentAnagramToGuess();
+                        byte[] nextAnagramToGuessMsgBytes = nextAnagramToGuessMsg.getBytes(StandardCharsets.UTF_8);
+                        sentPacket.setData(nextAnagramToGuessMsgBytes);
+
                     }
 
-                    return true;
-
+                }else{
+                    /* The client has guessed a wrong answer */
+                    String wrongAnswer = "wrong";
+                    byte[] wrongAnswerBytes = wrongAnswer.getBytes(StandardCharsets.UTF_8);
+                    sentPacket.setData(wrongAnswerBytes);
                 }
 
+                sentPacket.setAddress(gameInstances.get(gameId).getUserAddr());
+                sentPacket.setPort(gameInstances.get(gameId).getUserPort());
 
+                try {
+                    socket.send(sentPacket);
+                } catch (IOException e) {
+                    System.err.println("Could not send packet");
+                }
 
+                /* Delete game Instance if win */
+                if(win){
+                    gameInstances.remove(gameId);
+                }
 
+                return true;
             }
         }
         return false;
