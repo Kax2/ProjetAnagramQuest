@@ -1,6 +1,7 @@
 package org.example;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.nio.file.Files;
@@ -12,21 +13,24 @@ public class Game {
 
     private final InetAddress userAddr;
     private final int userPort;
-    private final int finalLength;
-    private final LinkedList<String> anagramSequence;
+    private final ArrayList<String> anagramSequence;
     private ArrayList<String> dictionary;
     private Map<String, Set<String>> anagramicClasses;
+    private int currentAnagramToGuess;
     public Game(InetAddress userAddr, int userPort, int finalLength){
         this.userAddr = userAddr;
         this.userPort = userPort;
-        this.finalLength = finalLength;
 
-        dictionary = loadDictionary("../french-debian.txt");
+        this.dictionary = loadDictionary("../french-debian.txt");
 
-        anagramicClasses = createAnagramicClasses(dictionary);
+        this.anagramicClasses = createAnagramicClasses(dictionary);
 
         this.anagramSequence = findAnagramSequence(finalLength);
 
+        this.currentAnagramToGuess = 0;
+    }
+    public String getCurrentAnagramToGuess(){
+        return this.anagramSequence.get(this.currentAnagramToGuess);
     }
     private String sortWord(String word){
 
@@ -71,7 +75,7 @@ public class Game {
         return this.userAddr;
     }
 
-    public LinkedList<String> getAnagramSequence(){
+    public ArrayList<String> getAnagramSequence(){
         return this.anagramSequence;
     }
 
@@ -94,7 +98,7 @@ public class Game {
         }
     }
 
-    private LinkedList<String> findAnagramSequence(int maxLength){
+    private ArrayList<String> findAnagramSequence(int maxLength){
 
         if(dictionary.size()==0){
 
@@ -119,25 +123,64 @@ public class Game {
         /* Choosing one of the last words randomly */
         int randomLastWord = ThreadLocalRandom.current().nextInt(0, potentialLastWords.size());
 
+        /*
+        ArrayList<ArrayList<String>> potentialSequences = new ArrayList<>();
+
+
+        for(String word : potentialLastWords){
+
+            System.out.println("Word : " + word);
+            potentialSequences.add(findAnagrams(word));
+
+        }
+
+
+        int bestSequence = 0;
+        for(int i=1; i<potentialSequences.size(); i++){
+            if(potentialSequences.get(i).size()>potentialSequences.get(bestSequence).size()){
+                bestSequence=i;
+            }
+            if(potentialSequences.get(i).size()==potentialSequences.get(bestSequence).size()){
+                if(ThreadLocalRandom.current().nextInt(0, 2)==1){
+                    bestSequence=i;
+                }
+            }
+        }
+
+
+
+        ArrayList<String> finalAnagramSequence = potentialSequences.get(bestSequence);
+*/
+
         String lastWord = potentialLastWords.get(randomLastWord);
 
         System.out.println("Last word : " + lastWord);
 
-        LinkedList<String> anagramSequence = findAnagrams(lastWord);
 
-        //System.out.println("Anagram sequence :");
-        //System.out.println(anagramSequence);
+        ArrayList<String> finalAnagramSequence = findAnagrams(lastWord);
 
         /* Delete last string if it is of length 1, it is useless */
-        if(anagramSequence.getLast().length()==1){
-            anagramSequence.remove(anagramSequence.size()-1);
+        if(finalAnagramSequence.get(finalAnagramSequence.size()-1).length()==1){
+            finalAnagramSequence.remove(finalAnagramSequence.size()-1);
         }
 
-        return anagramSequence;
+        String sortLastWord = sortWord(finalAnagramSequence.get(0));
+        finalAnagramSequence.set(0,sortLastWord);
+
+        /* Inverse the sequence so that the last element is the largest word */
+        ArrayList<String> finalAnagramSequenceCopy = (ArrayList<String>) finalAnagramSequence.clone();
+
+        int sizeOfSequence = finalAnagramSequence.size();
+
+        for(int i=0; i<sizeOfSequence; i++){
+            finalAnagramSequence.set(i,finalAnagramSequenceCopy.get(sizeOfSequence-1-i));
+        }
+
+        return finalAnagramSequence;
 
     }
 
-    private LinkedList<String> findAnagrams(String initialWord){
+    private ArrayList<String> findAnagrams(String initialWord){
 
         /* Finding all anagram with 1 less letter */
         ArrayList<String> anagramsWith1LessLetter = new ArrayList<>();
@@ -179,7 +222,7 @@ public class Game {
 
         /* If no anagrams with one less letters are found, return the initial word */
         if(anagramsWith1LessLetter.isEmpty()){
-            LinkedList<String> retWord = new LinkedList<>();
+            ArrayList<String> retWord = new ArrayList<>();
             retWord.add(initialWord);
 
             //System.out.println("Returned Word : ");
@@ -187,7 +230,7 @@ public class Game {
             return retWord;
         }
 
-        ArrayList<LinkedList<String>> potentialSequences = new ArrayList<>();
+        ArrayList<ArrayList<String>> potentialSequences = new ArrayList<>();
 
         /* Get sequences from all potential anagrams */
         for(String anagram : anagramsWith1LessLetter){
@@ -213,7 +256,7 @@ public class Game {
 
         }
 
-        LinkedList<String> sequence = new LinkedList<>();
+        ArrayList<String> sequence = new ArrayList<>();
         sequence.add(initialWord);
         sequence.addAll(potentialSequences.get(bestSequence));
 

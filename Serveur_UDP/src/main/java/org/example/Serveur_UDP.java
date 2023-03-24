@@ -1,5 +1,6 @@
 package org.example;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
@@ -67,9 +68,11 @@ public class Serveur_UDP {
         }
     }
 
-    private static boolean parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket, DatagramSocket socket){
+    private static void printErrorMsg(String errorMsg, DatagramPacket receivedPacket){
+        System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
+    }
 
-
+    public static boolean parseStart(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket, DatagramSocket socket){
 
         String errorMsg;
 
@@ -83,8 +86,8 @@ public class Serveur_UDP {
                     errorMsg = "No max size of anagram specified -> canceling game instantiation";
 
                     /* printing error in console and sending error message to user's client */
-                    System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
 
+                    printErrorMsg(errorMsg, receivedPacket);
                     sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
 
                     return false;
@@ -106,7 +109,7 @@ public class Serveur_UDP {
                     errorMsg = "Value parsed is not a Number -> canceling game instantiation";
 
                     /* printing error in console and sending error message to user's client */
-                    System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
+                    printErrorMsg(errorMsg, receivedPacket);
 
                     sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
 
@@ -119,7 +122,7 @@ public class Serveur_UDP {
                     errorMsg = "A game has already been started for this client -> canceling game instantiation";
 
                     /* printing error in console and sending error message to user's client */
-                    System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
+                    printErrorMsg(errorMsg, receivedPacket);
 
                     sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
 
@@ -134,7 +137,7 @@ public class Serveur_UDP {
                     errorMsg = "Could not find a anagram sequence -> canceling game instantiation";
 
                     /* printing error in console and sending error message to user's client */
-                    System.err.println("Received start command by : " + receivedPacket.getAddress() + "/" + receivedPacket.getPort() + " : " + errorMsg);
+                    printErrorMsg(errorMsg, receivedPacket);
 
                     sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
 
@@ -143,13 +146,73 @@ public class Serveur_UDP {
 
                 /* All other checks are valid, we add the game to instances for the player and do not check other commands */
                 gameInstances.add(game);
+
+                /* Send a packet to inform the client of the first anagram to guess */
+
+                String anagramToGuess = "guess:"+game.getCurrentAnagramToGuess();
+                byte[] anagramToGuessBytes = anagramToGuess.getBytes(StandardCharsets.UTF_8);
+
+                DatagramPacket initialGuessPacket = new DatagramPacket(anagramToGuessBytes, anagramToGuessBytes.length);
+                initialGuessPacket.setAddress(game.getUserAddr());
+                initialGuessPacket.setPort(game.getUserPort());
+
+                try {
+                    socket.send(initialGuessPacket);
+                } catch (IOException e) {
+                    System.err.println("Could not send initial guess packet");
+                }
+
                 return true;
             }
         }
         /* No start command in command list, we do nothing, and check for other commands*/
         return false;
     }
-    public static void main(String[] args) throws UnknownHostException, SocketException {
+    public static boolean parseAnswer(ArrayList<ArrayList<String>> commandList, DatagramPacket receivedPacket, DatagramSocket socket){
+
+        String errorMsg;
+
+        for(ArrayList<String> command : commandList){
+            if(command.get(0).equals("answer")){
+                if((command.size()==1)){
+
+                    errorMsg = "No answer given";
+
+                    /* printing error in console and sending error message to user's client */
+                    printErrorMsg(errorMsg, receivedPacket);
+                    sendErrorPacket(socket,receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
+
+                    return false;
+                }
+
+                if(command.size()>2){
+                    System.out.println("Several answers were given");
+                }
+
+                int gameId = -1;
+
+                for(int i=0; i<gameInstances.size(); i++){
+                    if(receivedPacket.getAddress()==gameInstances.get(i).getUserAddr() && receivedPacket.getPort()==gameInstances.get(i).getUserPort()){
+                        gameId=i;
+                        break;
+                    }
+                }
+                /* If gameId is still -1, no games were found for client */
+                if(gameId==-1){
+                    errorMsg = "No games were found for this client";
+                    printErrorMsg(errorMsg, receivedPacket);
+                    sendErrorPacket(socket, receivedPacket.getAddress(), receivedPacket.getPort(), errorMsg);
+                    return true;
+                }
+
+
+                String answer = new String(receivedPacket.getData(), StandardCharsets.UTF_8);
+
+            }
+        }
+        return false;
+    }
+    public static void main(String[] args) throws SocketException {
 
         ///, InetAddress.getByName(INTERFACE)
 
@@ -187,6 +250,10 @@ public class Serveur_UDP {
 
             /* Checking if user sent start command */
             if(parseStart(commandList, receivedPacket, socket)){
+                continue;
+            }
+
+            if(parseAnswer(commandList, receivedPacket, socket)){
                 continue;
             }
 
