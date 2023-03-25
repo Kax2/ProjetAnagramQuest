@@ -13,12 +13,12 @@
         android:layout_marginBottom="12dp"
         android:spinnerMode="dropdown"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
-        app:layout_constraintEnd_toStartOf="@+id/editTextTextPersonName2"
+        app:layout_constraintEnd_toStartOf="@+id/maxNumberOfLettersInput"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/generateAnagramSequenceButton"
+        android:id="@+id/generateAnagramButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Generate New Anagram Sequence"
@@ -36,7 +36,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/dictionarySelectText2"
+        android:id="@+id/maxNumberOfLettersText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -45,16 +45,15 @@
         app:layout_constraintStart_toStartOf="@+id/guideline2" />
 
     <EditText
-        android:id="@+id/editTextTextPersonName"
+        android:id="@+id/guessInput"
         android:layout_width="295dp"
         android:layout_height="43dp"
         android:ems="10"
         android:hint="Guess an anagram"
         android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/generateAnagramSequenceButton" />
+        app:layout_constraintTop_toTopOf="@+id/guideline6" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"
@@ -64,11 +63,11 @@
         app:layout_constraintGuide_begin="205dp" />
 
     <EditText
-        android:id="@+id/editTextTextPersonName2"
+        android:id="@+id/maxNumberOfLettersInput"
         android:layout_width="188dp"
         android:layout_height="44dp"
         android:ems="10"
-        android:inputType="textPersonName"
+        android:inputType="number"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline2" />
@@ -78,13 +77,47 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.11" />
+        app:layout_constraintGuide_percent="0.13953489" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="34dp" />
+        app:layout_constraintGuide_percent="0.08071136" />
+
+    <Button
+        android:id="@+id/guessButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Guess"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/guessInput" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.23" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.7359781" />
+
+    <TextView
+        android:id="@+id/anagramToGuess"
+        android:layout_width="214dp"
+        android:layout_height="202dp"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline6"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
