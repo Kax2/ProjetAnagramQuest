@@ -7,6 +7,9 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.common.template.TemplateEngine;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.templ.pebble.PebbleTemplateEngine;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -17,6 +20,7 @@ import static io.vertx.core.Vertx.vertx;
 public class MainVerticle extends AbstractVerticle {
   private JsonArray dictionariesJSON;
 
+  private JsonArray dictionariesJSON = getInfoOnDictionaries();
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
@@ -25,24 +29,46 @@ public class MainVerticle extends AbstractVerticle {
     vertxOptions.setBlockedThreadCheckInterval(120000);
 
     /* Création du serveur web */
-    var serverWeb = vertx(vertxOptions).createHttpServer().requestHandler(req -> {
+    var serverWeb = vertx.createHttpServer().requestHandler(req -> {
       req.response()
         .putHeader("content-type", "text/plain")
         .end("Hello from Vert.x! YOYOYOYO");
     });
 
-
-
     dictionariesJSON = getInfoOnDictionaries();
 
+    // 2: Création du routeur
     var router = Router.router(vertx);
 
+    // Activation des sessions (pour enregistrer le nombre des visiteurs)
+    //SessionStore sessionStore = LocalSessionStore.create(vertx);
+    //router.route().handler(SessionHandler.create(sessionStore));
+
+    // Initialisation du moteur de template
+    final TemplateEngine engine = PebbleTemplateEngine.create(vertx);
+
+    final StaticHandler staticHandlerRules = StaticHandler.create().setWebRoot("webroot/rules.html");
+    final StaticHandler staticHandlerExamples = StaticHandler.create().setWebRoot("webroot/examples.html");
+
+    router.route("/").handler(req -> {
+      req.redirect("/rules/");
+    });
+
+    router.route("/rules/").handler(staticHandlerRules);
+    router.route("/examples/").handler(staticHandlerExamples);
+
+
     router.route(HttpMethod.GET, "/dictionaries").handler(req -> {
+        req.response()
+          .putHeader("content-type", "application/json; charset=UTF8")
+          .end(dictionariesJSON.encodePrettily());
 
+    });
+
+    router.route("/rules").handler(req -> {
       req.response()
-        .putHeader("content-type","application/json; charset=UTF8")
-        .end(dictionariesJSON.encodePrettily());
-
+        .putHeader("content-type","text/plain; charset=UTF-8")
+        .end("Règles du Jeu");
     });
 
     router.route(HttpMethod.GET, "/game/:dictionary/:n").handler(req -> {
@@ -89,6 +115,13 @@ public class MainVerticle extends AbstractVerticle {
       }
 
     });
+
+    router.route("/examples").handler(req -> {
+      req.response()
+        .putHeader("content-type","text/plain; charset=UTF-8")
+        .end("Exemples d'anagrammes");
+    });
+
 
     serverWeb.requestHandler(router);
 
