@@ -51,8 +51,8 @@ public class MainVerticle extends AbstractVerticle {
       req.redirect("/rules/");
     });
 
-    router.route("/rules/").handler(staticHandlerRules);
-    router.route("/examples/").handler(staticHandlerExamples);
+    router.route("/rules").handler(staticHandlerRules);
+    router.route("/examples").handler(staticHandlerExamples);
 
 
     router.route(HttpMethod.GET, "/dictionaries").handler(req -> {
