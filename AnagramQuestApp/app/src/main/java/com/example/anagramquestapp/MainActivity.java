@@ -15,18 +15,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,132 +59,110 @@ public class MainActivity extends AppCompatActivity
 
         /* Sending Request to fetch list of dictionaries available */
         RequestQueue queue = Volley.newRequestQueue(this);
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(URLtoDictionaries, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                for (int i = 0; i < response.length(); i++) {
-                    try {
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(URLtoDictionaries, response -> {
+            for (int i = 0; i < response.length(); i++) {
+                try {
 
-                        dictAdapter.add(response.getJSONObject(i).getString("language"));
+                    dictAdapter.add(response.getJSONObject(i).getString("language"));
 
-                    } catch (JSONException e) {
-                        Log.e("JsonRequest", e.toString());
-                    }
+                } catch (JSONException e) {
+                    Log.e("JsonRequest", e.toString());
                 }
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, "Could not connect to : "+URLtoDictionaries+" to fetch dictionary", Toast.LENGTH_SHORT).show();
-            }
-        }
+        }, error -> Toast.makeText(MainActivity.this, "Could not connect to : "+URLtoDictionaries+" to fetch dictionary", Toast.LENGTH_SHORT).show()
         );
 
         queue.add(jsonArrayRequest);
         /* Creation of a Button to send a request to generate a sequence of anagrams */
         Button generateAnagramButton = findViewById(R.id.generateAnagramButton);
         generateAnagramButton.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        EditText maxNumberOfLettersInput = (EditText) findViewById(R.id.maxNumberOfLettersInput);
-                        String maxNumberOfLettersString = maxNumberOfLettersInput.getText().toString();
+                view -> {
+                    EditText maxNumberOfLettersInput = (EditText) findViewById(R.id.maxNumberOfLettersInput);
+                    String maxNumberOfLettersString = maxNumberOfLettersInput.getText().toString();
 
-                        Log.i("dict", "Selected dictionary : " +selectedDictionary);
+                    Log.i("dict", "Selected dictionary : " +selectedDictionary);
 
-                        int maxNumberOfLetters=0;
+                    int maxNumberOfLetters;
 
-                        try {
-                            maxNumberOfLetters = Integer.parseInt(maxNumberOfLettersString);
-                            Log.i("maxNumberOfLetters",Integer.toString(maxNumberOfLetters));
-                        }catch (NumberFormatException e){
-                            Toast.makeText(MainActivity.this, "Please enter a number for the max number of letters", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        if(maxNumberOfLetters<2){
-                            Toast.makeText(MainActivity.this, "Please selected a number higher than 2", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        String url = URLtoGenerateAnagramSequence.replace(":dictionary",selectedDictionary).replace(":n",maxNumberOfLettersString);
-
-                        ArrayList<ArrayList<String>> anagramSequence = new ArrayList<>();
-                        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(url, new Response.Listener<JSONArray>() {
-                            @Override
-                            public void onResponse(JSONArray response) {
-                                for (int i = 0; i < response.length(); i++) {
-                                    try {
-                                        String[] words = response.getJSONObject(i).get("words").toString().split(",");
-                                        anagramSequence.add(new ArrayList<>(Arrays.asList(words)));
-
-                                    } catch (JSONException e) {
-                                        Log.e("JsonRequest", e.toString());
-                                    }
-                                }
-                                game = new Game(anagramSequence);
-                                if(!game.isGameStarted()){
-                                    Toast.makeText(MainActivity.this, "Anagram sequence is empty, please try to generate a new sequence", Toast.LENGTH_SHORT).show();
-                                    return;
-                                }
-
-                                simpleProgressBar.setVisibility(View.INVISIBLE);
-
-                                Log.i("Sequence",game.printAnagramSequence());
-                                showAnagramToGuess();
-                            }
-                        }, new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(MainActivity.this, "Could not connect to : "+url+" to generate an anagram sequence", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                        );
-                        int socketTimeout = 120000;//30 seconds - change to what you want
-                        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
-                        jsonArrayRequest.setRetryPolicy(policy);
-
-                        simpleProgressBar.setVisibility(View.VISIBLE);
-                        queue.add(jsonArrayRequest);
-
+                    try {
+                        maxNumberOfLetters = Integer.parseInt(maxNumberOfLettersString);
+                        Log.i("maxNumberOfLetters",Integer.toString(maxNumberOfLetters));
+                    }catch (NumberFormatException e){
+                        Toast.makeText(MainActivity.this, "Please enter a number for the max number of letters", Toast.LENGTH_SHORT).show();
+                        return;
                     }
+
+                    if(maxNumberOfLetters<2){
+                        Toast.makeText(MainActivity.this, "Please selected a number higher than 2", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String url = URLtoGenerateAnagramSequence.replace(":dictionary",selectedDictionary).replace(":n",maxNumberOfLettersString);
+
+                    ArrayList<ArrayList<String>> anagramSequence = new ArrayList<>();
+                    JsonArrayRequest jsonArrayRequest1 = new JsonArrayRequest(url, response -> {
+                        for (int i = 0; i < response.length(); i++) {
+                            try {
+                                String[] words = response.getJSONObject(i).get("words").toString().split(",");
+                                anagramSequence.add(new ArrayList<>(Arrays.asList(words)));
+
+                            } catch (JSONException e) {
+                                Log.e("JsonRequest", e.toString());
+                            }
+                        }
+                        game = new Game(anagramSequence);
+                        if(!game.isGameStarted()){
+                            Toast.makeText(MainActivity.this, "Anagram sequence is empty, please try to generate a new sequence", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        simpleProgressBar.setVisibility(View.INVISIBLE);
+
+                        Log.i("Sequence",game.printAnagramSequence());
+                        showAnagramToGuess();
+                    }, error -> Toast.makeText(MainActivity.this, "Could not connect to : "+url+" to generate an anagram sequence", Toast.LENGTH_SHORT).show()
+                    );
+                    int socketTimeout = 120000;//30 seconds - change to what you want
+                    RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+                    jsonArrayRequest1.setRetryPolicy(policy);
+
+                    simpleProgressBar.setVisibility(View.VISIBLE);
+                    queue.add(jsonArrayRequest1);
+
                 }
         );
 
 
         Button guessButton = findViewById(R.id.guessButton);
-        guessButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EditText guessInput = findViewById(R.id.guessInput);
-                String guessString = guessInput.getText().toString();
+        guessButton.setOnClickListener(view -> {
+            EditText guessInput = findViewById(R.id.guessInput);
+            String guessString = guessInput.getText().toString();
 
-                if(game==null){
-                    return;
-                }
-                if(!game.isGameStarted()){
-                    return;
-                }
-
-                Log.i("Guess","Guess : "+guessString+" is correct ? "+game.answerIsCorrect(guessString));
-                if(game.answerIsCorrect(guessString)){
-
-                    Toast.makeText(MainActivity.this, "Correct answer !" ,Toast.LENGTH_LONG).show();
-
-                    if(!game.setNextAnagramToGuess()){
-                        Log.i("Guess","HERE");
-                        Toast.makeText(MainActivity.this, "You WIN !" ,Toast.LENGTH_LONG).show();
-                        TextView anagramTextView = findViewById(R.id.anagramToGuess);
-                        anagramTextView.setText("");
-                    }else{
-                        showAnagramToGuess();
-                    }
-                }else{
-                    Toast.makeText(MainActivity.this, "Wrong ! Try again !" ,Toast.LENGTH_LONG).show();
-                }
-
+            if(game==null){
+                return;
             }
-            });
+            if(!game.isGameStarted()){
+                return;
+            }
+
+            Log.i("Guess","Guess : "+guessString+" is correct ? "+game.answerIsCorrect(guessString));
+            if(game.answerIsCorrect(guessString)){
+
+                Toast.makeText(MainActivity.this, "Correct answer !" ,Toast.LENGTH_LONG).show();
+
+                if(!game.setNextAnagramToGuess()){
+                    Log.i("Guess","HERE");
+                    Toast.makeText(MainActivity.this, "You WIN !" ,Toast.LENGTH_LONG).show();
+                    TextView anagramTextView = findViewById(R.id.anagramToGuess);
+                    anagramTextView.setText("");
+                }else{
+                    showAnagramToGuess();
+                }
+            }else{
+                Toast.makeText(MainActivity.this, "Wrong ! Try again !" ,Toast.LENGTH_LONG).show();
+            }
+
+        });
 
 
     }
@@ -205,42 +177,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
 
-    }
-    private ArrayList<ArrayList<String>> requestSequence(int maxNumberOfLetters){
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url = URLtoGenerateAnagramSequence.replace(":dictionary",selectedDictionary);
-
-        ArrayList<ArrayList<String>> returnSequence = new ArrayList<>();
-
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-
-                        try{
-                            JSONArray sequenceJA = new JSONArray(response);
-
-                            for(int i=0; i<sequenceJA.length(); i++){
-                                JSONObject obj = sequenceJA.getJSONObject(i);
-                                ArrayList<String> words = (ArrayList<String>) Arrays.asList(obj.getString("words").split(","));
-                                returnSequence.add(words);
-                            }
-
-                        }catch (JSONException e){
-                            Log.e("requestedJSON", "Problem with JSON");
-                        }
-
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, error.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            }
-
-        }
-        );
-        queue.add(stringRequest);
-        return returnSequence;
     }
     private void showAnagramToGuess(){
 
