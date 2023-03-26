@@ -19,9 +19,6 @@ import static io.vertx.core.Vertx.vertx;
 
 public class MainVerticle extends AbstractVerticle {
   private JsonArray dictionariesJSON;
-
-  private JsonArray dictionariesJSON = getInfoOnDictionaries();
-
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
 
