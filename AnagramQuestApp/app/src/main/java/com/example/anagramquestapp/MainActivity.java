@@ -35,7 +35,8 @@ public class MainActivity extends AppCompatActivity
     private Game game;
 
     private ArrayList<String> availableDictionaries = new ArrayList<>();
-    private String URLtoDictionaries = "https://localhost:8888/dictionaries";
+    /* On emulator use 10.0.2.2 ip address to access host machine address ip  */
+    private String URLtoDictionaries = "http://10.0.2.2:8888/dictionaries";
     private String URLtoGenerateAnagramSequence = "https://localhost:8888/game/:dictionary/:n";
 
     @Override
@@ -43,10 +44,11 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        /* For testing purposes */
+        /*
         availableDictionaries.add("english");
         availableDictionaries.add("french");
-
+         */
 
         fetchDictionaryList();
 
