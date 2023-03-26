@@ -1,13 +1,14 @@
 package com.example.starter;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.common.template.TemplateEngine;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.templ.pebble.PebbleTemplateEngine;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -19,6 +20,7 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
+
     /* Création du serveur web */
     var serverWeb = vertx.createHttpServer().requestHandler(req -> {
       req.response()
@@ -26,16 +28,45 @@ public class MainVerticle extends AbstractVerticle {
         .end("Hello from Vert.x! YOYOYOYO");
     });
 
+    // 2: Création du routeur
     var router = Router.router(vertx);
 
-    router.route(HttpMethod.GET, "/dictionaries").handler(req -> {
+    // Activation des sessions (pour enregistrer le nombre des visiteurs)
+    //SessionStore sessionStore = LocalSessionStore.create(vertx);
+    //router.route().handler(SessionHandler.create(sessionStore));
 
-      req.response()
-        .putHeader("content-type","application/json; charset=UTF8")
-        .end(dictionariesJSON.encodePrettily());
+    // Initialisation du moteur de template
+    final TemplateEngine engine = PebbleTemplateEngine.create(vertx);
 
+    final StaticHandler staticHandlerRules = StaticHandler.create().setWebRoot("webroot/rules.html");
+    final StaticHandler staticHandlerExamples = StaticHandler.create().setWebRoot("webroot/examples.html");
+
+    router.route("/").handler(req -> {
+      req.redirect("/rules/");
     });
 
+    router.route("/rules/").handler(staticHandlerRules);
+    router.route("/examples/").handler(staticHandlerExamples);
+
+
+    router.route(HttpMethod.GET, "/dictionaries").handler(req -> {
+      req.response()
+        .putHeader("content-type","application/json; charset=UTF-8")
+        .end(dictionariesJSON.encodePrettily());
+    });
+
+
+    router.route("/rules").handler(req -> {
+      req.response()
+        .putHeader("content-type","text/plain; charset=UTF-8")
+        .end("Règles du Jeu");
+    });
+
+    router.route("/examples").handler(req -> {
+      req.response()
+        .putHeader("content-type","text/plain; charset=UTF-8")
+        .end("Exemples d'anagrammes");
+    });
 
 
     serverWeb.requestHandler(router);
