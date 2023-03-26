@@ -15,7 +15,7 @@ public class Game {
     public Game(ArrayList<ArrayList<String>> anagramSequence){
 
         this.anagramSequence = anagramSequence;
-        this.currentAnagramToGuess=anagramSequence.size();
+        this.currentAnagramToGuess=anagramSequence.size()-1;
     }
     private String sortWord(String word){
 
@@ -31,6 +31,7 @@ public class Game {
             /* The client has guessed the last anagram, do not continue the game */
             return false;
         }
+
         /* The client has not guessed the last anagram, continue the game */
         return true;
     }
@@ -52,5 +53,7 @@ public class Game {
     public String getExampleWord(){
         return anagramSequence.get(currentAnagramToGuess).get(0);
     }
-
+    public String printAnagramSequence(){
+        return anagramSequence.toString();
+    }
 }

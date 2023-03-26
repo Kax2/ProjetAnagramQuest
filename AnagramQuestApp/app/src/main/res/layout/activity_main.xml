@@ -8,9 +8,9 @@
 
     <Spinner
         android:id="@+id/dictionarySelect"
-        android:layout_width="195dp"
-        android:layout_height="23dp"
-        android:layout_marginBottom="12dp"
+        android:layout_width="197dp"
+        android:layout_height="34dp"
+        android:layout_marginBottom="8dp"
         android:spinnerMode="dropdown"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toStartOf="@+id/maxNumberOfLettersInput"
@@ -77,14 +77,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.13953489" />
+        app:layout_constraintGuide_percent="0.11" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.08071136" />
+        app:layout_constraintGuide_percent="0.04" />
 
     <Button
         android:id="@+id/guessButton"
@@ -115,6 +115,16 @@
         android:layout_height="190dp"
         android:textAlignment="center"
         android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline6"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline5" />
+
+    <ProgressBar
+        android:id="@+id/waitForAnagramProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="109dp"
+        android:layout_height="102dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
