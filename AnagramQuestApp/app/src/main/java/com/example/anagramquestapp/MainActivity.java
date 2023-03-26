@@ -104,7 +104,6 @@ public class MainActivity extends AppCompatActivity
         );
 
 
-
         Button guessButton = findViewById(R.id.guessButton);
         guessButton.setOnClickListener(new View.OnClickListener() {
             @Override
