@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity
 
     private ArrayList<String> availableDictionaries = new ArrayList<>();
     /* On emulator use 10.0.2.2 ip address to access host machine address ip  */
-    private String URLtoDictionaries = "http://10.0.2.2:8888/dictionaries";
+    private String URLtoDictionaries = "http://192.168.1.76:8888/dictionaries";
     private String URLtoGenerateAnagramSequence = "https://localhost:8888/game/:dictionary/:n";
 
     @Override
