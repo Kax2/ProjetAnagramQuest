@@ -72,3 +72,18 @@ La page suivante devrait alors s'afficher :
 
 # Application Android 
 
+Pour lancer l'application Android, il faut tout d'abord lancer Android Studio puis :
+1. soit créer un émulateur dans Device Manager
+
+<img src="img/android/Screenshot_device_manager.png" alt="Screenshot of device manager in android studio" width="100%" height="100%">
+
+2. soit connecter votre téléphone à votre PC après avoir activé le débogage usb
+
+<img src="img/android/Screenshot_debogage_usb.png" alt="Screenshot of usb debuging on an Android phone" width="100%" height="100%">
+
+Puis séléctionner l'appareil (émulateur ou votre téléphone) en haut à gauche puis lancer l'application avec l'icone run verte.
+
+<img src="img/android/Screenshot_run_app.png" alt="Screenshot of how to run an app on Android Studio" width="100%" height="100%">
+
+
+
