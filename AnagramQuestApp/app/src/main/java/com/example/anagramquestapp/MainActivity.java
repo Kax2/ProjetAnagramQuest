@@ -1,5 +1,6 @@
 package com.example.anagramquestapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -97,6 +98,11 @@ public class MainActivity extends AppCompatActivity
                         return;
                     }
 
+                    if(selectedDictionary==null){
+                        Toast.makeText(MainActivity.this, "No dictionary selected", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
                     String url = URLtoGenerateAnagramSequence.replace(":dictionary",selectedDictionary).replace(":n",maxNumberOfLettersString);
 
                     ArrayList<ArrayList<String>> anagramSequence = new ArrayList<>();
@@ -104,6 +110,9 @@ public class MainActivity extends AppCompatActivity
                         for (int i = 0; i < response.length(); i++) {
                             try {
                                 String[] words = response.getJSONObject(i).get("words").toString().split(",");
+                                for(int j=0; j<words.length; j++){
+                                    words[j] = words[j].toLowerCase();
+                                }
                                 anagramSequence.add(new ArrayList<>(Arrays.asList(words)));
 
                             } catch (JSONException e) {
@@ -151,10 +160,14 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(MainActivity.this, "Correct answer !" ,Toast.LENGTH_LONG).show();
 
                 if(!game.setNextAnagramToGuess()){
-                    Log.i("Guess","HERE");
+
                     Toast.makeText(MainActivity.this, "You WIN !" ,Toast.LENGTH_LONG).show();
                     TextView anagramTextView = findViewById(R.id.anagramToGuess);
                     anagramTextView.setText("");
+                    Intent myIntent = new Intent(MainActivity.this, WinActivity.class);
+                    MainActivity.this.startActivity(myIntent);
+
+
                 }else{
                     showAnagramToGuess();
                 }
