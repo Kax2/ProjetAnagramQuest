@@ -79,7 +79,7 @@ Pour lancer l'application Android, il faut tout d'abord lancer Android Studio pu
 
 2. soit connecter votre téléphone à votre PC après avoir activé le débogage usb
 
-<img src="img/android/Screenshot_debogage_usb.jpg" alt="Screenshot of usb debuging on an Android phone" width="100%" height="100%">
+<img src="img/android/Screenshot_debogage_usb.jpg" alt="Screenshot of usb debuging on an Android phone" width="50%" height="50%">
 
 Puis séléctionner l'appareil (émulateur ou votre téléphone) en haut à gauche puis lancer l'application avec l'icone run verte.
 
